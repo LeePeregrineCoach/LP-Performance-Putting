@@ -102,6 +102,39 @@ input:focus, textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px r
 .live-count { font-size: 12px; color: var(--mute); margin-top: 8px; }
 .holediv { background: var(--accent); color: white; font-size: 11px; font-weight: 700; text-align: center; padding: 7px 10px; border-radius: var(--rs); margin: 10px 0 4px; letter-spacing: .01em; }
 .holediv:first-child { margin-top: 0; }
+
+/* GREEN READING GAME */
+.gr-unit-toggle { display: flex; gap: 0; margin-bottom: 16px; border-radius: var(--rs); overflow: hidden; border: 1.5px solid var(--blue); }
+.gr-unit-btn { flex: 1; padding: 8px 6px; text-align: center; font-size: 12px; font-weight: 700; cursor: pointer; background: white; color: var(--blue); border: none; transition: .15s; }
+.gr-unit-btn.sel { background: var(--blue); color: white; }
+.gr-batch-head { background: var(--blue-pale); border: 1px solid var(--blue-mid); border-radius: var(--rs); padding: 8px 12px; font-size: 12px; font-weight: 700; color: var(--blue); margin: 14px 0 6px; display: flex; justify-content: space-between; align-items: center; }
+.gr-batch-acc { font-size: 11px; background: var(--blue); color: white; border-radius: 10px; padding: 2px 9px; }
+.gr-row { display: grid; grid-template-columns: 60px 1fr 1fr 72px 72px; gap: 5px; align-items: center; background: var(--off); border-radius: var(--rs); padding: 7px 10px; border: 1px solid var(--border); margin-bottom: 5px; }
+.gr-row-head { display: grid; grid-template-columns: 60px 1fr 1fr 72px 72px; gap: 5px; padding: 0 10px; margin-bottom: 4px; }
+.gr-row-head span { font-size: 9px; font-weight: 700; color: var(--mute); text-transform: uppercase; }
+.gr-inp { width: 100%; padding: 7px 6px; border: 1.5px solid var(--border); border-radius: var(--rs); font-size: 14px; font-weight: 700; text-align: center; outline: none; background: white; }
+.gr-inp:focus { border-color: var(--blue); }
+.gr-inp.actual { border-color: var(--blue-mid); background: var(--blue-pale); }
+.gr-pct { font-size: 11px; font-weight: 700; min-width: 62px; text-align: right; color: var(--mute); }
+.gr-pct.good { color: var(--green); }
+.gr-pct.ok { color: #b07800; }
+.gr-pct.bad { color: var(--red); }
+.gr-err { font-size: 11px; font-weight: 700; min-width: 62px; text-align: right; color: var(--mute); }
+.gr-err.over { color: var(--red); }
+.gr-err.under { color: var(--blue); }
+.gr-err.zero { color: var(--green); }
+.gr-batch-bias { font-size: 10px; margin-left: 6px; padding: 1px 7px; border-radius: 9px; font-weight: 700; }
+.gr-batch-bias.over { background: #fdecea; color: var(--red); }
+.gr-batch-bias.under { background: var(--blue-pale); color: var(--blue); }
+.gr-batch-bias.even { background: var(--green-bg); color: var(--green); }
+.gr-summary { background: var(--off); border: 1px solid var(--border); border-radius: var(--rs); padding: 12px 14px; margin-top: 12px; }
+.gr-summary-row { display: flex; justify-content: space-between; font-size: 12px; padding: 5px 0; border-bottom: 1px solid var(--border); }
+.gr-summary-row:last-child { border-bottom: none; font-weight: 700; font-size: 13px; }
+.gr-acc-val { font-weight: 700; }
+.gr-acc-val.great { color: var(--green); }
+.gr-acc-val.good { color: var(--blue); }
+.gr-acc-val.ok { color: #b07800; }
+.gr-acc-val.bad { color: var(--red); }
 .live-count strong { color: var(--text); }
 
 /* SCORE RESULT BANNER */
@@ -292,6 +325,7 @@ input:focus, textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px r
         <div class="gg">
           <button class="gb" onclick="selG('e1')" id="gb_e1"><div class="gn">ECGA 01</div><div class="gname">PGA Tour Drill</div><div class="gsub">5&#8211;10&#8211;15&#8211;20ft</div></button>
           <button class="gb" onclick="selG('e2')" id="gb_e2"><div class="gn">ECGA 02</div><div class="gname">18-Loch Test</div><div class="gsub">England Golf Standard</div></button>
+          <button class="gb" onclick="selG('e3')" id="gb_e3"><div class="gn">ECGA 03</div><div class="gname">Green Reading</div><div class="gsub">Read-Genauigkeit %</div></button>
         </div>
       </div>
     </div>
@@ -448,7 +482,20 @@ var PG = {
         type:'18h',
         gs:function(d){return d.tp18||0;},
         gr:function(s){return s<=25?'green':s<=28?'blue':s<=32?'gold':'grey';},
-        grl:function(s){return s<=25?'Weltklasse 🏆':s<=28?'Sehr gut ⭐':s<=32?'Gut 👍':'Weiter ueben 💪';} }
+        grl:function(s){return s<=25?'Weltklasse 🏆':s<=28?'Sehr gut ⭐':s<=32?'Gut 👍':'Weiter ueben 💪';} },
+  e3: { name:'Green Reading Game', sub:'Read-Genauigkeit %', src:'ECGA',
+        desc:'20 Putts (4 Batches × 5 Putts). Spieler liest jeden Putt VOR dem Schlag, traegt den Read ein. Danach wird der tatsaechliche Break gemessen und eingetragen. App berechnet automatisch Fehler% und Genauigkeit%.',
+        scoring:{'95%+':'Weltklasse','85%+':'Sehr gut','75%+':'Gut'}, ref:'Ziel: so nahe wie moeglich an 100% Lesegenauigkeit',
+        type:'gr',
+        batches:[
+          {label:'Unter 3ft (kurze Putts)',  putts:5, distLabel:'<3ft'},
+          {label:'3ft – 6ft',                putts:5, distLabel:'3-6ft'},
+          {label:'6ft – 15ft',               putts:5, distLabel:'6-15ft'},
+          {label:'15ft – 21ft',              putts:5, distLabel:'15-21ft'}
+        ],
+        gs:function(d){return d.overallAcc!==undefined?d.overallAcc:0;},
+        gr:function(s){return s>=95?'green':s>=85?'blue':s>=75?'gold':'grey';},
+        grl:function(s){return s>=95?'Weltklasse 🏆':s>=85?'Sehr gut ⭐':s>=75?'Gut 👍':'Weiter ueben 💪';} }
 };
 
 var H18 = [
@@ -556,7 +603,7 @@ function autosave() {
       ldB: (document.getElementById('ldB') && document.getElementById('ldB').value) || '',
       ldR: (document.getElementById('ldR') && document.getElementById('ldR').value) || '',
       gnotes: (document.getElementById('gnotes') && document.getElementById('gnotes').value) || '',
-      proxVals: {}, h18Vals: {}
+      proxVals: {}, h18Vals: {}, grVals: {}, grUnit: grUnit
     };
     // capture proximity inputs (px0..px11) if present
     if (selGame && PG[selGame] && PG[selGame].type === 'prox') {
@@ -570,6 +617,18 @@ function autosave() {
       H18.forEach(function(hd) {
         var el = document.getElementById('h18_' + hd.h);
         if (el) draft.h18Vals[hd.h] = el.value;
+      });
+    }
+    // capture green reading inputs if present
+    if (selGame === 'e3' && PG.e3) {
+      var pn = 0;
+      PG.e3.batches.forEach(function(batch) {
+        for (var p = 0; p < batch.putts; p++) {
+          var rEl = document.getElementById('grr_' + pn);
+          var aEl = document.getElementById('gra_' + pn);
+          draft.grVals[pn] = { r: rEl ? rEl.value : '', a: aEl ? aEl.value : '' };
+          pn++;
+        }
       });
     }
     localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
@@ -638,6 +697,17 @@ function restoreDraft() {
         if (el) el.value = d.h18Vals[h];
       });
       upd18();
+    }
+    // refill green reading inputs
+    if (d.grVals && selGame === 'e3') {
+      if (d.grUnit) { grUnit = d.grUnit; setGRUnit(d.grUnit); }
+      Object.keys(d.grVals).forEach(function(idx) {
+        var rEl = document.getElementById('grr_' + idx);
+        var aEl = document.getElementById('gra_' + idx);
+        if (rEl) rEl.value = d.grVals[idx].r || '';
+        if (aEl) aEl.value = d.grVals[idx].a || '';
+      });
+      calcGR();
     }
     // refill ladder fields
     if (document.getElementById('ldD')) document.getElementById('ldD').value = d.ldD || '';
@@ -809,6 +879,9 @@ function buildEntry() {
 
   } else if (g.type === '18h') {
     h += build18Input();
+
+  } else if (g.type === 'gr') {
+    h += buildGreenReadInput(g);
   }
 
   h += '<div class="div"></div><div class="fr"><label>Notizen (optional)</label><textarea id="gnotes" rows="2" placeholder="Bedingungen, Beobachtungen..." oninput="autosave()"></textarea></div>';
@@ -847,6 +920,190 @@ function build18Input() {
   });
   h += '</tbody></table></div><div class="live-count">Gesamt: <strong id="tot18">–</strong> (Rekord: Willett 25)</div>';
   return h;
+}
+
+// ─── GREEN READING GAME ───────────────────────────────
+var grUnit = 'cm'; // 'cm', 'in', 'ft'
+
+function setGRUnit(u) {
+  grUnit = u;
+  ['cm','in','ft'].forEach(function(x) {
+    var b = document.getElementById('gru_' + x);
+    if (b) b.className = 'gr-unit-btn' + (x === u ? ' sel' : '');
+  });
+  var ph = u === 'cm' ? 'z.B. 15' : u === 'in' ? 'z.B. 6' : 'z.B. 0.5';
+  document.querySelectorAll('.gr-inp').forEach(function(el) { el.placeholder = ph; });
+  calcGR();
+  autosave();
+}
+
+function buildGreenReadInput(g) {
+  var h = '';
+  h += '<div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:8px">1. Messeinheit wählen (gilt für die ganze Session)</div>';
+  h += '<div class="gr-unit-toggle">'
+     + '<button class="gr-unit-btn sel" id="gru_cm" onclick="setGRUnit(\'cm\')">cm</button>'
+     + '<button class="gr-unit-btn" id="gru_in" onclick="setGRUnit(\'in\')">inches</button>'
+     + '<button class="gr-unit-btn" id="gru_ft" onclick="setGRUnit(\'ft\')">feet</button>'
+     + '</div>';
+  h += '<div style="font-size:12px;color:var(--mute);margin-bottom:14px;line-height:1.6">'
+     + '2. Lies jeden Putt <strong>vor</strong> dem Schlag. Trage deinen Read ein.<br>'
+     + '3. Nach dem Schlag: miss den tatsächlichen Break und trage ihn ein.<br>'
+     + '+ = Über-Read &nbsp;|&nbsp; − = Unter-Read</div>';
+
+  var puttNum = 0;
+  g.batches.forEach(function(batch, bi) {
+    h += '<div class="gr-batch-head">'
+       + '<span>' + batch.label + ' · ' + batch.distLabel + '</span>'
+       + '<span style="display:flex;align-items:center;gap:4px">'
+       + '<span class="gr-batch-acc" id="bacc_' + bi + '">–%</span>'
+       + '<span class="gr-batch-bias" id="bbias_' + bi + '"></span>'
+       + '</span></div>';
+    h += '<div class="gr-row-head"><span>Putt</span><span>Mein Read</span><span>Tatsächlich</span><span style="text-align:right">Genauigkeit</span><span style="text-align:right">Fehler</span></div>';
+    for (var p = 0; p < batch.putts; p++) {
+      var idx = puttNum;
+      h += '<div class="gr-row">'
+         + '<div style="font-size:11px;font-weight:700">Putt ' + (idx + 1) + '</div>'
+         + '<input type="number" class="gr-inp" id="grr_' + idx + '" min="0" step="0.1" placeholder="z.B. 15" oninput="calcGR();autosave();">'
+         + '<input type="number" class="gr-inp actual" id="gra_' + idx + '" min="0" step="0.1" placeholder="z.B. 20" oninput="calcGR();autosave();">'
+         + '<div class="gr-pct" id="grp_' + idx + '">–</div>'
+         + '<div class="gr-err" id="gre_' + idx + '">–</div>'
+         + '</div>';
+      puttNum++;
+    }
+  });
+
+  h += '<div class="gr-summary" id="grSummary" style="display:none">'
+     + '<div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:8px">Live-Ergebnis</div>'
+     + '<div id="grSummaryRows"></div>'
+     + '</div>';
+
+  return h;
+}
+
+function calcGR() {
+  var g = PG[selGame];
+  if (!g || g.type !== 'gr') return;
+  var puttNum = 0;
+  var batchAccs = [], batchBiases = [];
+  var allAcc = 0, allBias = 0, allTotal = 0;
+
+  g.batches.forEach(function(batch, bi) {
+    var bAcc = 0, bBias = 0, bCount = 0;
+
+    for (var p = 0; p < batch.putts; p++) {
+      var idx = puttNum;
+      var rEl = document.getElementById('grr_' + idx);
+      var aEl = document.getElementById('gra_' + idx);
+      var pEl = document.getElementById('grp_' + idx); // accuracy cell
+      var eEl = document.getElementById('gre_' + idx); // signed error cell
+
+      if (rEl && aEl && rEl.value !== '' && aEl.value !== '') {
+        var read   = parseFloat(rEl.value);
+        var actual = parseFloat(aEl.value);
+
+        if (actual > 0) {
+          var signedErr  = read - actual;                          // + = over, - = under
+          var signedPct  = signedErr / actual * 100;              // signed error %
+          var absErrPct  = Math.abs(signedPct);
+          var accPct     = Math.max(0, 100 - absErrPct);
+
+          bAcc  += accPct;  bBias += signedPct;  bCount++;
+          allAcc += accPct; allBias += signedPct; allTotal++;
+
+          // accuracy cell
+          var accStr = accPct.toFixed(1) + '%';
+          var accCls = accPct >= 90 ? 'good' : accPct >= 75 ? 'ok' : 'bad';
+          if (pEl) { pEl.textContent = accStr; pEl.className = 'gr-pct ' + accCls; }
+
+          // signed error cell: show sign + value
+          var errStr = (signedPct > 0 ? '+' : '') + signedPct.toFixed(1) + '%';
+          var errCls = Math.abs(signedPct) < 5 ? 'zero' : signedPct > 0 ? 'over' : 'under';
+          if (eEl) { eEl.textContent = errStr; eEl.className = 'gr-err ' + errCls; }
+
+        } else if (actual === 0 && read === 0) {
+          bAcc += 100; allAcc += 100; bCount++; allTotal++;
+          if (pEl) { pEl.textContent = '100%'; pEl.className = 'gr-pct good'; }
+          if (eEl) { eEl.textContent = '0%';   eEl.className = 'gr-err zero'; }
+        } else {
+          if (pEl) { pEl.textContent = '–'; pEl.className = 'gr-pct'; }
+          if (eEl) { eEl.textContent = '–'; eEl.className = 'gr-err'; }
+        }
+      } else {
+        if (pEl) { pEl.textContent = '–'; pEl.className = 'gr-pct'; }
+        if (eEl) { eEl.textContent = '–'; eEl.className = 'gr-err'; }
+      }
+      puttNum++;
+    }
+
+    var batchAcc  = bCount > 0 ? bAcc  / bCount : null;
+    var batchBias = bCount > 0 ? bBias / bCount : null;
+    batchAccs.push(batchAcc);
+    batchBiases.push(batchBias);
+
+    // update batch header accuracy badge
+    var bEl = document.getElementById('bacc_' + bi);
+    if (bEl) bEl.textContent = batchAcc !== null ? batchAcc.toFixed(1) + '%' : '–%';
+
+    // update batch bias badge
+    var bbEl = document.getElementById('bbias_' + bi);
+    if (bbEl && batchBias !== null) {
+      var biasAbs = Math.abs(batchBias);
+      if (biasAbs < 5) {
+        bbEl.textContent = 'Ausgeglichen'; bbEl.className = 'gr-batch-bias even';
+      } else if (batchBias > 0) {
+        bbEl.textContent = 'Über +' + batchBias.toFixed(1) + '%'; bbEl.className = 'gr-batch-bias over';
+      } else {
+        bbEl.textContent = 'Unter ' + batchBias.toFixed(1) + '%'; bbEl.className = 'gr-batch-bias under';
+      }
+    } else if (bbEl) { bbEl.textContent = ''; }
+  });
+
+  // live summary table
+  var overall     = allTotal > 0 ? allAcc  / allTotal : null;
+  var overallBias = allTotal > 0 ? allBias / allTotal : null;
+  var sumDiv = document.getElementById('grSummary');
+  if (allTotal > 0 && sumDiv) {
+    sumDiv.style.display = 'block';
+    var rows = '<table style="width:100%;border-collapse:collapse;font-size:12px">'
+      + '<thead><tr>'
+      + '<th style="text-align:left;padding:5px 6px;font-size:10px;color:var(--mute);font-weight:700;text-transform:uppercase">Distanz</th>'
+      + '<th style="text-align:right;padding:5px 6px;font-size:10px;color:var(--mute);font-weight:700;text-transform:uppercase">Genauigkeit</th>'
+      + '<th style="text-align:right;padding:5px 6px;font-size:10px;color:var(--mute);font-weight:700;text-transform:uppercase">Ø Fehler</th>'
+      + '<th style="text-align:right;padding:5px 6px;font-size:10px;color:var(--mute);font-weight:700;text-transform:uppercase">Tendenz</th>'
+      + '</tr></thead><tbody>';
+
+    g.batches.forEach(function(batch, bi) {
+      var acc  = batchAccs[bi];
+      var bias = batchBiases[bi];
+      var accCls  = acc  === null ? '' : acc  >= 90 ? 'great' : acc  >= 75 ? 'good' : acc  >= 60 ? 'ok' : 'bad';
+      var biasStr = bias === null ? '–' : (bias > 0 ? '+' : '') + bias.toFixed(1) + '%';
+      var tend    = bias === null ? '–' : Math.abs(bias) < 5 ? '✓ Ausgeglichen' : bias > 0 ? '▲ Über-Read' : '▼ Unter-Read';
+      var tendCls = bias === null ? '' : Math.abs(bias) < 5 ? 'color:var(--green)' : bias > 0 ? 'color:var(--red)' : 'color:var(--blue)';
+      rows += '<tr style="border-top:1px solid var(--border)">'
+        + '<td style="padding:5px 6px;font-weight:600">' + batch.distLabel + '</td>'
+        + '<td style="padding:5px 6px;text-align:right"><span class="gr-acc-val ' + accCls + '">' + (acc !== null ? acc.toFixed(1) + '%' : '–') + '</span></td>'
+        + '<td style="padding:5px 6px;text-align:right;font-weight:700">' + biasStr + '</td>'
+        + '<td style="padding:5px 6px;text-align:right;font-weight:700;' + tendCls + '">' + tend + '</td>'
+        + '</tr>';
+    });
+
+    // overall row
+    if (overall !== null) {
+      var ocls     = overall >= 90 ? 'great' : overall >= 75 ? 'good' : overall >= 60 ? 'ok' : 'bad';
+      var oBiasStr = overallBias !== null ? (overallBias > 0 ? '+' : '') + overallBias.toFixed(1) + '%' : '–';
+      var oTend    = overallBias === null ? '–' : Math.abs(overallBias) < 5 ? '✓ Ausgeglichen' : overallBias > 0 ? '▲ Über-Read' : '▼ Unter-Read';
+      var oTendCls = overallBias === null ? '' : Math.abs(overallBias) < 5 ? 'color:var(--green)' : overallBias > 0 ? 'color:var(--red)' : 'color:var(--blue)';
+      rows += '<tr style="border-top:2px solid var(--blue);font-weight:700">'
+        + '<td style="padding:7px 6px">⌀ Gesamt</td>'
+        + '<td style="padding:7px 6px;text-align:right"><span class="gr-acc-val ' + ocls + '">' + overall.toFixed(1) + '%</span></td>'
+        + '<td style="padding:7px 6px;text-align:right">' + oBiasStr + '</td>'
+        + '<td style="padding:7px 6px;text-align:right;' + oTendCls + '">' + oTend + '</td>'
+        + '</tr>';
+    }
+    rows += '</tbody></table>';
+    var srEl = document.getElementById('grSummaryRows');
+    if (srEl) srEl.innerHTML = rows;
+  }
 }
 
 function buildChalEntry() {
@@ -980,6 +1237,36 @@ function collectData() {
     H18.forEach(function(hd) { var v = parseInt(document.getElementById('h18_' + hd.h) && document.getElementById('h18_' + hd.h).value || ''); if (isNaN(v)) m18 = true; else t18 += v; });
     if (m18) { toast('Bitte alle 18 Loecher eintragen!', 1); return false; }
     gdata.tp18 = t18;
+
+  } else if (g.type === 'gr') {
+    var puttNum = 0, grAllAcc = 0, grAllBias = 0, grAllCount = 0;
+    var grBatchAccs = [], grBatchBiases = [], grMissing = false;
+    g.batches.forEach(function(batch, bi) {
+      var bAcc = 0, bBias = 0, bCount = 0;
+      for (var p = 0; p < batch.putts; p++) {
+        var rEl = document.getElementById('grr_' + puttNum);
+        var aEl = document.getElementById('gra_' + puttNum);
+        if (!rEl || !aEl || rEl.value === '' || aEl.value === '') { grMissing = true; }
+        else {
+          var read   = parseFloat(rEl.value);
+          var actual = parseFloat(aEl.value);
+          var signedPct = actual > 0 ? (read - actual) / actual * 100 : (read === 0 ? 0 : 100);
+          var accPct    = Math.max(0, 100 - Math.abs(signedPct));
+          bAcc  += accPct;  bBias  += signedPct;  bCount++;
+          grAllAcc += accPct; grAllBias += signedPct; grAllCount++;
+        }
+        puttNum++;
+      }
+      grBatchAccs.push(bCount > 0 ? Math.round(bAcc  / bCount * 10) / 10 : null);
+      grBatchBiases.push(bCount > 0 ? Math.round(bBias / bCount * 10) / 10 : null);
+    });
+    if (grMissing) { toast('Bitte alle Reads und tatsaechlichen Werte eintragen!', 1); return false; }
+    gdata.overallAcc  = Math.round(grAllAcc  / grAllCount * 10) / 10;
+    gdata.overallBias = Math.round(grAllBias / grAllCount * 10) / 10;
+    gdata.overallErr  = Math.round(Math.abs(grAllBias / grAllCount) * 10) / 10;
+    gdata.batchAccs   = grBatchAccs;
+    gdata.batchBiases = grBatchBiases;
+    gdata.grUnit      = grUnit;
   }
   return true;
 }
@@ -996,6 +1283,7 @@ function buildSummary() {
   else if (g.type === 'lad') su = ' Baelle';
   else if (g.type === '18h') su = ' Putts';
   else if (g.type === 'mm' || g.type === 'pga') su = ' Pkt';
+  else if (g.type === 'gr') { sd = sc.toFixed(1); su = '% Genauigkeit'; }
 
   var drows = '';
   if (g.type === 'mm') drows = dr('Eingelocht', gdata.makes) + dr('Daneben', gdata.misses) + dr('Quote', Math.round(gdata.makes / g.dists.length * 100) + '%');
@@ -1004,6 +1292,21 @@ function buildSummary() {
   else if (g.type === 'lad') drows = dr('Startdistanz', gdata.ld + ' ft') + dr('Baelle in Zone', gdata.biz) + dr('Neustarts', gdata.lr);
   else if (g.type === 'pga') drows = dr('Punkte', gdata.pts) + dr('Eingelocht', gdata.makes + ' / 20');
   else if (g.type === '18h') drows = dr('Gesamtputts', gdata.tp18) + dr('Kursrekord', 'Willett: 25');
+  else if (g.type === 'gr') {
+    var overallBiasStr = (gdata.overallBias >= 0 ? '+' : '') + gdata.overallBias.toFixed(1) + '%';
+    var overallTend = Math.abs(gdata.overallBias) < 5 ? 'Ausgeglichen' : gdata.overallBias > 0 ? '▲ Über-Read' : '▼ Unter-Read';
+    drows += dr('Gesamtgenauigkeit', sc.toFixed(1) + '%');
+    drows += dr('Ø Bias (Gesamt)', overallBiasStr + ' → ' + overallTend);
+    drows += dr('Messeinheit', gdata.grUnit);
+    g.batches.forEach(function(batch, bi) {
+      var acc  = gdata.batchAccs[bi];
+      var bias = gdata.batchBiases[bi];
+      var bBiasStr = bias !== null ? (bias >= 0 ? '+' : '') + bias.toFixed(1) + '%' : '–';
+      var bTend    = bias === null ? '–' : Math.abs(bias) < 5 ? 'Ausgeglichen' : bias > 0 ? '▲ Über-Read' : '▼ Unter-Read';
+      drows += dr(batch.distLabel + ' Genauigkeit', acc !== null ? acc.toFixed(1) + '%' : '–');
+      drows += dr(batch.distLabel + ' Tendenz', bBiasStr + ' · ' + bTend);
+    });
+  }
   if (gdata.notes) drows += dr('Notizen', gdata.notes);
 
   document.getElementById('sumCard').innerHTML =
@@ -1115,7 +1418,10 @@ function saveResult() {
     player: player, gameId: selGame, gameName: g.name, score: sc,
     rating: g.grl(sc),
     makes: gdata.makes, misses: gdata.misses, tvp: gdata.tvp, tp: gdata.tp,
-    pts: gdata.pts, tp18: gdata.tp18, biz: gdata.biz, ld: gdata.ld, notes: gdata.notes || ''
+    pts: gdata.pts, tp18: gdata.tp18, biz: gdata.biz, ld: gdata.ld,
+    overallAcc: gdata.overallAcc, overallBias: gdata.overallBias, overallErr: gdata.overallErr,
+    batchAccs: gdata.batchAccs, batchBiases: gdata.batchBiases, grUnit: gdata.grUnit,
+    notes: gdata.notes || ''
   };
   var hist = JSON.parse(localStorage.getItem('lpHist') || '[]');
   hist.unshift(savedR);
@@ -1129,14 +1435,18 @@ function saveResult() {
 }
 
 // ─── CSV / PDF / EMAIL ────────────────────────────────
-var CSVH = 'Datum,Uhrzeit,Spieler,Spiel,Score,Rating,Eingelocht,Daneben,VsPar,Proximity(ft),Punkte,Putts18,BaelleZone,Notizen';
+var CSVH = 'Datum,Uhrzeit,Spieler,Spiel,Score,Rating,Eingelocht,Daneben,VsPar,Proximity(ft),Punkte,Putts18,BaelleZone,GR-Genauigkeit,GR-Bias,GR-Fehler,GR-Einheit,Notizen';
 
 function mkRow(r) {
   var f = [r.date, r.time, r.player, r.gameName, r.score, r.rating,
     r.makes !== undefined ? r.makes : '', r.misses !== undefined ? r.misses : '',
     r.tvp !== undefined ? r.tvp : '', r.tp !== undefined ? r.tp : '',
     r.pts !== undefined ? r.pts : '', r.tp18 !== undefined ? r.tp18 : '',
-    r.biz !== undefined ? r.biz : '', r.notes || ''];
+    r.biz !== undefined ? r.biz : '',
+    r.overallAcc !== undefined ? r.overallAcc + '%' : '',
+    r.overallBias !== undefined ? (r.overallBias >= 0 ? '+' : '') + r.overallBias + '%' : '',
+    r.overallErr !== undefined ? r.overallErr + '%' : '',
+    r.grUnit || '', r.notes || ''];
   return f.map(function(x) { return '"' + String(x).replace(/"/g,'""') + '"'; }).join(',');
 }
 
